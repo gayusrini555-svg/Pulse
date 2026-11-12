@@ -1,7 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "rewrites": [
+    { "source": "/app", "destination": "/app.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/(.*)", "destination": "/api" }
+  ],
   "functions": { "api/index.js": { "maxDuration": 60 } },
   "crons": [{ "path": "/api/health", "schedule": "0 3 * * *" }]
 }
