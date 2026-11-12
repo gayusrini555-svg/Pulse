@@ -26,7 +26,7 @@ globalThis.fetch = async (url, opts = {}) => {
     const body = JSON.parse(opts.body)
     const prompt = body.contents[0].parts[0].text
     let out
-    if (prompt.includes('Code each LinkedIn post')) out = { posts: [...prompt.matchAll(/\[(p\d+)\]/g)].map((m, i) => ({ id: m[1], lever: i % 2 ? 'specificity' : 'contrarian', secondary: 'none', hook: 'Number-led', emotion: 'Curiosity', why: 'because' })) }
+    if (prompt.includes('Code each LinkedIn post')) out = { posts: [...prompt.matchAll(/\[((?:p|pasted-)\d+)\]/g)].map((m, i) => ({ id: m[1], lever: i % 2 ? 'specificity' : 'contrarian', secondary: 'none', hook: 'Number-led', emotion: 'Curiosity', why: 'because' })) }
     else if (prompt.includes('Summarise in under 12 words')) out = { summary: 'Money habits', onTopic: 10, matches: true }
     else if (prompt.includes('recurring pain points')) out = { clusters: [{ title: 'Why do I sell low?', count: 5, emotion: 'Frustration', quotes: ['I sold in March'], angle: 'Loss aversion', source: 'Pasted text' }], trending: [] }
     else if (prompt.includes('research brief')) out = { title: 'Brief', hypothesis: 'It will work', drafts: [{ text: 'A' }, { text: 'B' }, { text: 'C' }] }
@@ -91,4 +91,17 @@ test('weekly research job refreshes users with sources', async () => {
   const ok = await realFetch(base + '/api/cron/research', { headers: { 'user-agent': 'vercel-cron/1.0' } })
   const body = await ok.json()
   assert.equal(body.refreshed + body.failed, 1)
+})
+
+test('few Buffer posts: pasted posts fill the gap', async () => {
+  const saved = POSTS.splice(2)
+  try {
+    await assert.rejects(call('/api/mirror', {}), /needs at least 5/)
+    const pasted = Array.from({ length: 4 }, (_, i) => `A pasted LinkedIn post number ${i} that is long enough.`).join('\n\n')
+    const r = await call('/api/mirror', { pasted })
+    assert.equal(r.workspace.mirror.enough, true)
+    assert.equal(r.workspace.mirror.count, 6)
+  } finally {
+    POSTS.push(...saved)
+  }
 })

@@ -53,7 +53,7 @@
     const res = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const json = await res.json().catch(() => ({}))
     if (res.status === 401 && !SAMPLE) { location.href = '/?error=' + encodeURIComponent(json.error || 'Please connect your Buffer account again.'); throw new Error('signed out') }
-    if (!res.ok) throw new Error(json.error || 'Something went wrong. Please try again.')
+    if (!res.ok) { const e = new Error(json.error || 'Something went wrong. Please try again.'); e.code = json.code; throw e }
     return json
   }
 
@@ -184,7 +184,10 @@
     if (!m) {
       return `<section class="card soft" style="align-items:flex-start;gap:14px">${A.pip(90, 'Pip')}<span class="eyebrow">Step 1 · Mirror</span><h1>Ready when you are.</h1>
         <p class="muted" style="max-width:640px">Pulse will read up to 45 posts you've sent on ${esc(ws.onboarding.channelName || 'your LinkedIn')}, code each one like a researcher and work out your creator archetype. It takes about a minute.</p>
-        ${loadingBtn('mirror', 'Read my posts')}</section>`
+        ${ui.needPaste ? `<div class="card tight" style="width:100%;gap:10px"><b>${esc(ui.fewMsg || 'Paste a few of your recent LinkedIn posts.')}</b>
+          <label class="sr" for="pp">Your recent LinkedIn posts</label><textarea id="pp" data-model="pastePosts" rows="8" placeholder="Paste 5 or more of your recent LinkedIn posts. Leave a blank line between posts.">${esc(ui.pastePosts || '')}</textarea>
+          <span class="muted" style="font-size:13px">Copy them from your LinkedIn profile → Activity → Posts. Pulse only reads the text.</span></div>` : ''}
+        ${loadingBtn('mirror', ui.needPaste ? 'Read these posts' : 'Read my posts')}</section>`
     }
     if (!m.enough) return `<section class="card soft">${A.pip(70)}<h2>Not enough posts yet</h2><p class="muted">Pulse found ${m.count} posts. It needs at least 5 to see a pattern.</p>${loadingBtn('mirror', 'Try again', 'dark')}</section>`
     const p = archOf(m.primary)
@@ -336,7 +339,7 @@
         <div class="card tight"><span class="eyebrow">Try asking</span>${prompts.map(([k, q]) => `<button class="btn" style="justify-content:flex-start;text-align:left;font-weight:500;border-width:1px;border-color:var(--line)" data-act="ask-prompt" data-i="${k}">${esc(q)}</button>`).join('')}</div></aside>
       <section class="card" aria-label="Conversation" style="flex:3 1 560px;min-height:600px">
         <div class="stack" style="flex:1">${msgs.map((m) => m.who === 'pip'
-          ? `<div class="rise" style="display:flex;gap:10px;align-items:flex-start">${A.pip(40)}<div class="bubble-pip" style="max-width:80%"><div style="white-space:pre-line">${esc(m.text)}</div>${m.sources?.length ? `<div class="mono" style="font-size:12px;margin-top:8px">Sources: ${m.sources.map((s) => s.url && s.url !== '#' ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>` : esc(s.title)).join(' · ')}</div>` : ''}</div></div>`
+          ? `<div class="rise" style="display:flex;gap:10px;align-items:flex-start">${A.pip(40)}<div class="bubble-pip" style="max-width:80%"><div style="white-space:pre-line">${esc(m.text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|\s)\*(\S[^*]*?)\*(?=\s|$)/g, '$1<i>$2</i>')}</div>${m.sources?.length ? `<div class="mono" style="font-size:12px;margin-top:8px">Sources: ${m.sources.map((s) => s.url && s.url !== '#' ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>` : esc(s.title)).join(' · ')}</div>` : ''}</div></div>`
           : `<div class="bubble-you rise" style="max-width:80%">${esc(m.text)}</div>`).join('')}
           ${ui.busy === 'ask' ? `<div style="display:flex;gap:10px;align-items:center">${A.pip(40)}<span class="loading"><i></i><i></i><i></i></span></div>` : ''}</div>
         <form data-form="ask" style="display:flex;gap:10px;border-top:1px solid var(--soft);padding-top:14px"><label class="sr" for="q">Ask Pulse a question</label><input id="q" name="q" placeholder="Ask about your posts, results or trends" autocomplete="off" style="flex:1"><button class="btn primary" ${ui.busy ? 'disabled' : ''}>Ask</button></form>
@@ -406,7 +409,16 @@
       location.hash = '#mirror'
       setTimeout(() => actions.mirror(), 50)
     }),
-    mirror: () => run('mirror', async () => { if (SAMPLE) return; setWs((await api('/api/mirror', {})).workspace) }),
+    mirror: () => run('mirror', async () => {
+      if (SAMPLE) return
+      try {
+        setWs((await api('/api/mirror', { pasted: ui.pastePosts || '' })).workspace)
+        ui.needPaste = false
+      } catch (e) {
+        if (e.code === 'few_posts') { ui.needPaste = true; ui.fewMsg = e.message; return }
+        throw e
+      }
+    }),
     topic: (i) => run('topic', async () => { if (SAMPLE) return sampleOnly(); setWs((await api('/api/topic-check', { choice: i })).workspace) }),
     'test-shift': () => {},
     tab: (i) => { ui.listenTab = i; render() },
@@ -512,6 +524,7 @@
     const m = e.target.dataset.model
     if (m === 'topic' || m === 'own') ui.ob[m] = e.target.value
     else if (m === 'paste') ui.paste = e.target.value
+    else if (m === 'pastePosts') ui.pastePosts = e.target.value
     else if (m === 'draftText') { ui.draftText = e.target.value; ui.sent = null }
     if (e.target.dataset.src != null) {
       ui.sourceDraft = [...document.querySelectorAll('[data-src]')].map((x) => x.value)
