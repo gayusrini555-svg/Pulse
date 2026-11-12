@@ -302,14 +302,15 @@
     const L = (lensKey && ev.lenses?.[lensKey]) || { levers: ev.levers, label: ev.metric, basis: ev.basis, measured: ev.measured }
     const lensKeys = Object.keys(ev.lenses || {})
     const best = L.levers.find((l) => l.verdict === 'Works for you')
-    const worst = [...L.levers].reverse().find((l) => l.lift < 0)
+    const worst = [...L.levers].reverse().find((l) => l.lift < 0 && l.n >= 3) || [...L.levers].reverse().find((l) => l.lift < 0)
     const early = L.levers.find((l) => l.verdict === 'Early signal' && l.lift > 0)
     const max = Math.max(10, ...L.levers.map((l) => Math.abs(l.lift)))
     const cell = (v) => v == null ? '<td class="muted">–</td>' : `<td class="mono" style="font-weight:700;color:${v >= 10 ? 'var(--good)' : v <= -10 ? '#B3261E' : 'var(--muted)'}">${signed(v)}</td>`
     const allTable = lensKeys.length > 1 ? `<section class="card" style="gap:8px;overflow-x:auto"><h2>Across all your numbers</h2><p class="muted" style="font-size:14px">Your goal picks the view above. This table checks every number Pulse has, so one quiet metric doesn't hide what works.</p>
         <table style="border-collapse:collapse;width:100%;font-size:14px"><thead><tr><th style="text-align:left;padding:6px">Lever</th>${lensKeys.map((k) => `<th style="text-align:left;padding:6px">${esc(ev.lenses[k].label)}${k === ev.goalKey ? ' ★' : ''}</th>`).join('')}<th style="text-align:left;padding:6px">Overall</th></tr></thead>
         <tbody>${L.levers.map((l) => { const c = ev.consistency?.[l.key] || { up: 0, down: 0, of: 0 }; const verdict = c.of && c.up / c.of >= 0.6 ? '<span class="tag good">Lifts most numbers</span>' : c.of && c.down / c.of >= 0.6 ? '<span class="tag bad">Lowers most numbers</span>' : '<span class="tag grey">Mixed</span>'
-          return `<tr style="border-top:1px solid var(--line)"><td style="padding:6px"><b>${esc(l.name)}</b> <span class="muted">· ${l.n}</span></td>${lensKeys.map((k) => cell(ev.lenses[k].levers.find((x) => x.key === l.key)?.lift)).join('')}<td style="padding:6px">${verdict}</td></tr>` }).join('')}</tbody></table>
+          const verdictN = l.n < 5 ? `${verdict} <span class="muted" style="font-size:12px">early</span>` : verdict
+          return `<tr style="border-top:1px solid var(--line)"><td style="padding:6px"><b>${esc(l.name)}</b> <span class="muted">· ${l.n}</span></td>${lensKeys.map((k) => cell(ev.lenses[k].levers.find((x) => x.key === l.key)?.lift)).join('')}<td style="padding:6px">${verdictN}</td></tr>` }).join('')}</tbody></table>
         <p class="muted" style="font-size:12px">★ your goal. Lift is against your usual post (median, or average when most posts score 0). Fewer than 5 posts is an early signal.</p></section>` : ''
     return `<div class="stack" style="gap:8px;max-width:860px"><span class="eyebrow">Step 4 · Evidence · ${esc(L.label)} across ${L.measured} posts</span><h1>${best ? `${esc(best.name)} works for you.` : 'No lever stands out yet.'}${early ? ` ${esc(early.name)} isn't proven yet.` : ''}</h1></div>
       ${lensKeys.length > 1 ? `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="mono muted" style="font-size:12px">View by</span>${lensKeys.map((k) => `<button class="btn small ${k === lensKey ? 'primary' : ''}" data-act="ev-lens" data-i="${k}">${esc(ev.lenses[k].label)}${k === ev.goalKey ? ' ★' : ''}</button>`).join('')}</div>` : ''}
