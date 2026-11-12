@@ -30,3 +30,18 @@ test('if web search fails, Ask still answers without sources', async () => {
   assert.equal(out.text, 'plain answer')
   assert.deepEqual(out.sources, [])
 })
+
+test('if Gemini search quota is hit, Tavily results give sources', async () => {
+  process.env.TAVILY_API_KEY = 't'
+  const fresh = await import('../lib/ai.js?tavily')
+  globalThis.fetch = async (url, init) => {
+    const u = String(url)
+    const body = JSON.parse(init.body)
+    if (u.includes('tavily')) return new Response(JSON.stringify({ results: [{ title: 'News', url: 'https://ex.com/a', content: 'x' }] }), { status: 200 })
+    if (u.includes('googleapis') && body.tools) return new Response(JSON.stringify({ error: { message: 'quota' } }), { status: 429 })
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'grounded by tavily' }] } }] }), { status: 200 })
+  }
+  const out = await fresh.search('q', { query: 'ai validation' })
+  assert.equal(out.text, 'grounded by tavily')
+  assert.equal(out.sources[0].url, 'https://ex.com/a')
+})
