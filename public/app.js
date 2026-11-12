@@ -291,7 +291,7 @@
           <label for="file">Analytics file (.xlsx or .csv)</label><input id="file" type="file" accept=".xlsx,.xls,.csv" style="min-height:auto;padding:12px">
           ${loadingBtn('upload', 'Read my file')}</article>
         <article class="card"><span class="tag" style="align-self:flex-start">Optional shortcut</span><h2>Or paste a Buffer personal key</h2>
-          <p class="muted">Downloading LinkedIn analytics can be slow. If you'd rather skip it, create a personal key in your Buffer settings and paste it here. Pulse uses it once to read your post numbers and never saves it, so paste it again whenever you want fresh results. It never posts, edits or deletes.</p>
+          <p class="muted">Downloading LinkedIn analytics can be slow. If you'd rather skip it, create a personal key in your Buffer settings and paste it here. Pulse uses it once to read your post numbers and never saves it. The numbers last for this session only, so paste your key again next time. It never posts, edits or deletes.</p>
           <label for="pkey">Buffer personal key</label><input id="pkey" type="password" autocomplete="off" placeholder="Paste your key">
           ${loadingBtn('key', 'Read my numbers', 'dark')}${ui.keyError ? `<p class="err" role="alert">${esc(ui.keyError)}</p>` : ''}</article></section>`
     if (!ev?.enough) {
@@ -328,7 +328,8 @@
           const tg = { 'Works for you': 'good', 'Early signal': 'warm', 'No clear effect': 'grey', 'Works against you': 'bad' }[l.verdict]
           return `<div class="lift"><b title="${esc(lv(l.key)[3])}">${esc(l.name)}</b><div class="axis"><div>${l.lift < 0 ? `<i class="grow left" style="display:block;height:16px;width:${w}%;border-radius:999px 0 0 999px;background:${col};opacity:.55;animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div><span class="zero"></span><div>${l.lift >= 0 ? `<i class="grow" style="display:block;height:16px;width:${w}%;border-radius:0 999px 999px 0;background:${col};opacity:${l.verdict === 'Works for you' ? 1 : 0.55};animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div></div><span class="mono" style="font-weight:700">${signed(l.lift)} <span class="muted" style="font-weight:400">· ${l.n}</span></span><span class="tag ${tg}" style="justify-self:start">${esc(l.verdict)}</span></div>`
         }).join('')}
-        <p class="muted" style="font-size:13px;margin-top:6px">Fewer than 5 posts is only an early signal. Results from ${ws.evidenceSource?.kind === 'key' ? 'a one-time Buffer key read' : 'your uploaded file'}, ${ws.evidenceSource?.matched || ev.measured} posts matched.</p></section>
+        <p class="muted" style="font-size:13px;margin-top:6px">Fewer than 5 posts is only an early signal. Results from ${ws.evidenceSource?.kind === 'key' ? 'a one-time Buffer key read' : 'your uploaded file'}, ${ws.evidenceSource?.matched || ev.measured} posts matched.</p>
+        <div class="card tight soft" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;margin-top:8px"><span style="flex:1 1 300px;font-size:14px">${ws.evidenceSource?.kind === 'key' ? 'These numbers are for this session only. Your key was never saved, and Pulse deletes these numbers when you log out, sign in again, or after 6 hours. Paste your key again next time.' : 'These numbers come from the file you uploaded. You can clear them any time.'}</span>${loadingBtn('clear-numbers', 'Clear my numbers', '')}</div></section>
       ${allTable}
       <section class="row">${experimentsCard()}${ws.calibration ? `<div class="card soft" style="align-items:center;text-align:center;flex:1 1 260px"><span class="eyebrow">Calibration</span>
         <svg width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Calibration: ${ws.calibration.right} of ${ws.calibration.of} calls right"><circle cx="60" cy="60" r="48" fill="none" stroke="#fff" stroke-width="14"></circle><circle cx="60" cy="60" r="48" fill="none" stroke="#FF6B3D" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="${(ws.calibration.right / ws.calibration.of) * 301.6} 302"></circle><text x="60" y="67" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="24" fill="#262335">${ws.calibration.right} / ${ws.calibration.of}</text></svg>
@@ -498,6 +499,7 @@
       }
     }) },
     'ev-lens': (k) => { ui.evLens = k; render() },
+    'clear-numbers': () => run('clear-numbers', async () => { if (SAMPLE) return sampleOnly(); setWs((await api('/api/evidence/clear', {})).workspace); toast('Your numbers were cleared.') }),
     'ask-prompt': (i) => {
       const q = { trend: "What's trending in my niche this week?", why: 'Why did my best post do so well?', next: 'What should I test next?', stop: 'Which lever should I stop leaning on?' }[i]
       ask(q, i)

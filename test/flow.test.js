@@ -80,6 +80,9 @@ test('signed-in flow from onboarding to evidence', async () => {
   assert.ok(r.workspace.evidence.levers.some((l) => l.verdict === 'Works for you'))
   const a = await call('/api/ask', { question: 'What is trending?' })
   assert.equal(a.sources[0].url, 'https://s.example')
+  r = await call('/api/evidence/clear', {})
+  assert.equal(r.workspace.evidence, null)
+  assert.equal(r.workspace.evidenceSource, null)
   assert.equal((await call('/api/delete', {})).deleted, true)
 })
 
