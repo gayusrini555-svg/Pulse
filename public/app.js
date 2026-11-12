@@ -296,27 +296,39 @@
           ${loadingBtn('key', 'Read my numbers', 'dark')}${ui.keyError ? `<p class="err" role="alert">${esc(ui.keyError)}</p>` : ''}</article></section>`
     if (!ev?.enough) {
       return `<div class="stack" style="gap:8px;max-width:820px"><span class="eyebrow">Step 4 · Evidence</span><h1>Unlock your results</h1><p class="muted" style="font-size:17px">Performance numbers aren't shared with outside apps by default, so you bring your own. Pick the way that feels right. Everything else in Pulse keeps working either way.</p></div>
-        ${ev && !ev.enough ? `<p class="err">${ev.zero ? `Pulse matched numbers to ${ev.measured} posts, but they are all zero for your goal's measure, so there is nothing to compare yet.` : `Pulse matched numbers to ${ev.measured} posts. It needs at least 3 to compare against your usual.`}</p>` : ''}${unlock}${experimentsCard()}`
+        ${ev && !ev.enough ? `<p class="err">${ev.zero ? `Pulse matched numbers to ${ev.measured} posts, but every number is zero or missing, so there is nothing to compare yet. Try again once your posts have a few days of results.` : `Pulse matched numbers to ${ev.measured} of your coded posts. It needs at least 3 to compare against your usual. Posts you pasted into Mirror can't be matched to Buffer numbers; the LinkedIn file upload matches them by date.`}</p>` : ''}${unlock}${experimentsCard()}`
     }
-    const best = ev.levers.find((l) => l.verdict === 'Works for you')
-    const worst = [...ev.levers].reverse().find((l) => l.lift < 0)
-    const early = ev.levers.find((l) => l.verdict === 'Early signal' && l.lift > 0)
-    const max = Math.max(10, ...ev.levers.map((l) => Math.abs(l.lift)))
-    return `<div class="stack" style="gap:8px;max-width:860px"><span class="eyebrow">Step 4 · Evidence · ${esc(ev.metric)} across ${ev.measured} posts</span><h1>${best ? `${esc(best.name)} works for you.` : 'No lever stands out yet.'}${early ? ` ${esc(early.name)} isn't proven yet.` : ''}</h1></div>
-      ${best ? `<section class="card warm pop" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:20px">${A.face(best.archetype, 92)}<div class="stack" style="flex:1 1 360px;gap:4px"><span class="eyebrow">Badge earned</span><h2>${esc(best.name)} is proven for your audience.</h2><p class="muted">${signed(best.lift)} ${esc(ev.metric)} over ${best.n} posts, compared with your usual.</p></div></section>` : ''}
+    const lensKey = ui.evLens && ev.lenses?.[ui.evLens] ? ui.evLens : (ev.metricKey || null)
+    const L = (lensKey && ev.lenses?.[lensKey]) || { levers: ev.levers, label: ev.metric, basis: ev.basis, measured: ev.measured }
+    const lensKeys = Object.keys(ev.lenses || {})
+    const best = L.levers.find((l) => l.verdict === 'Works for you')
+    const worst = [...L.levers].reverse().find((l) => l.lift < 0)
+    const early = L.levers.find((l) => l.verdict === 'Early signal' && l.lift > 0)
+    const max = Math.max(10, ...L.levers.map((l) => Math.abs(l.lift)))
+    const cell = (v) => v == null ? '<td class="muted">–</td>' : `<td class="mono" style="font-weight:700;color:${v >= 10 ? 'var(--good)' : v <= -10 ? '#B3261E' : 'var(--muted)'}">${signed(v)}</td>`
+    const allTable = lensKeys.length > 1 ? `<section class="card" style="gap:8px;overflow-x:auto"><h2>Across all your numbers</h2><p class="muted" style="font-size:14px">Your goal picks the view above. This table checks every number Pulse has, so one quiet metric doesn't hide what works.</p>
+        <table style="border-collapse:collapse;width:100%;font-size:14px"><thead><tr><th style="text-align:left;padding:6px">Lever</th>${lensKeys.map((k) => `<th style="text-align:left;padding:6px">${esc(ev.lenses[k].label)}${k === ev.goalKey ? ' ★' : ''}</th>`).join('')}<th style="text-align:left;padding:6px">Overall</th></tr></thead>
+        <tbody>${L.levers.map((l) => { const c = ev.consistency?.[l.key] || { up: 0, down: 0, of: 0 }; const verdict = c.of && c.up / c.of >= 0.6 ? '<span class="tag good">Lifts most numbers</span>' : c.of && c.down / c.of >= 0.6 ? '<span class="tag bad">Lowers most numbers</span>' : '<span class="tag grey">Mixed</span>'
+          return `<tr style="border-top:1px solid var(--line)"><td style="padding:6px"><b>${esc(l.name)}</b> <span class="muted">· ${l.n}</span></td>${lensKeys.map((k) => cell(ev.lenses[k].levers.find((x) => x.key === l.key)?.lift)).join('')}<td style="padding:6px">${verdict}</td></tr>` }).join('')}</tbody></table>
+        <p class="muted" style="font-size:12px">★ your goal. Lift is against your usual post (median, or average when most posts score 0). Fewer than 5 posts is an early signal.</p></section>` : ''
+    return `<div class="stack" style="gap:8px;max-width:860px"><span class="eyebrow">Step 4 · Evidence · ${esc(L.label)} across ${L.measured} posts</span><h1>${best ? `${esc(best.name)} works for you.` : 'No lever stands out yet.'}${early ? ` ${esc(early.name)} isn't proven yet.` : ''}</h1></div>
+      ${lensKeys.length > 1 ? `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="mono muted" style="font-size:12px">View by</span>${lensKeys.map((k) => `<button class="btn small ${k === lensKey ? 'primary' : ''}" data-act="ev-lens" data-i="${k}">${esc(ev.lenses[k].label)}${k === ev.goalKey ? ' ★' : ''}</button>`).join('')}</div>` : ''}
+      ${ev.goalFallback ? `<p class="muted" style="font-size:14px">Your goal is ${esc(ev.goalMetric)}, but those are zero or missing on your posts, so Pulse starts with ${esc(ev.metric)}.</p>` : ''}
+            ${best ? `<section class="card warm pop" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:20px">${A.face(best.archetype, 92)}<div class="stack" style="flex:1 1 360px;gap:4px"><span class="eyebrow">Badge earned</span><h2>${esc(best.name)} is proven for your audience.</h2><p class="muted">${signed(best.lift)} ${esc(L.label)} over ${best.n} posts, compared with your usual.</p></div></section>` : ''}
       <section class="grid">
         <div class="card tight"><span class="tag good" style="align-self:flex-start">What worked</span><div>${best ? `${esc(best.name)}: <b>${signed(best.lift)}</b> over your usual, across ${best.n} posts.` : 'Nothing clearly above your usual yet.'}</div></div>
         <div class="card tight"><span class="tag warm" style="align-self:flex-start">What drifted</span><div>${worst ? `${esc(worst.name)}: <b>${signed(worst.lift)}</b> versus your usual, across ${worst.n} posts.` : 'Nothing clearly below your usual.'}</div></div>
         <div class="card tight soft"><span class="tag" style="align-self:flex-start;background:#fff">Try next</span><div>${early ? `${esc(early.name)} looks promising (${signed(early.lift)}) but rests on ${early.n} posts. Run 2 more before calling it.` : 'Pick an under-used lever from Ideas and test it.'}</div></div>
       </section>
-      <section class="card" style="gap:4px"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline"><h2>Which levers work for your audience</h2><span class="mono muted" style="font-size:12px">lift vs your ${ev.basis === 'average' ? 'average' : 'median'} · posts</span></div>
-        ${ev.levers.map((l, i) => {
+      <section class="card" style="gap:4px"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline"><h2>Which levers work for your audience</h2><span class="mono muted" style="font-size:12px">lift vs your ${L.basis === 'average' ? 'average' : 'median'} · posts</span></div>
+        ${L.levers.map((l, i) => {
           const w = (Math.abs(l.lift) / max) * 100
           const col = archOf(l.archetype).color
           const tg = { 'Works for you': 'good', 'Early signal': 'warm', 'No clear effect': 'grey', 'Works against you': 'bad' }[l.verdict]
           return `<div class="lift"><b title="${esc(lv(l.key)[3])}">${esc(l.name)}</b><div class="axis"><div>${l.lift < 0 ? `<i class="grow left" style="display:block;height:16px;width:${w}%;border-radius:999px 0 0 999px;background:${col};opacity:.55;animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div><span class="zero"></span><div>${l.lift >= 0 ? `<i class="grow" style="display:block;height:16px;width:${w}%;border-radius:0 999px 999px 0;background:${col};opacity:${l.verdict === 'Works for you' ? 1 : 0.55};animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div></div><span class="mono" style="font-weight:700">${signed(l.lift)} <span class="muted" style="font-weight:400">· ${l.n}</span></span><span class="tag ${tg}" style="justify-self:start">${esc(l.verdict)}</span></div>`
         }).join('')}
         <p class="muted" style="font-size:13px;margin-top:6px">Fewer than 5 posts is only an early signal. Results from ${ws.evidenceSource?.kind === 'key' ? 'a one-time Buffer key read' : 'your uploaded file'}, ${ws.evidenceSource?.matched || ev.measured} posts matched.</p></section>
+      ${allTable}
       <section class="row">${experimentsCard()}${ws.calibration ? `<div class="card soft" style="align-items:center;text-align:center;flex:1 1 260px"><span class="eyebrow">Calibration</span>
         <svg width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Calibration: ${ws.calibration.right} of ${ws.calibration.of} calls right"><circle cx="60" cy="60" r="48" fill="none" stroke="#fff" stroke-width="14"></circle><circle cx="60" cy="60" r="48" fill="none" stroke="#FF6B3D" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="${(ws.calibration.right / ws.calibration.of) * 301.6} 302"></circle><text x="60" y="67" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="24" fill="#262335">${ws.calibration.right} / ${ws.calibration.of}</text></svg>
         <div>of your calls were right.</div></div>` : ''}</section>
@@ -484,6 +496,7 @@
         throw e
       }
     }) },
+    'ev-lens': (k) => { ui.evLens = k; render() },
     'ask-prompt': (i) => {
       const q = { trend: "What's trending in my niche this week?", why: 'Why did my best post do so well?', next: 'What should I test next?', stop: 'Which lever should I stop leaning on?' }[i]
       ask(q, i)

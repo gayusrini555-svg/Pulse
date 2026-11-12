@@ -65,3 +65,17 @@ test('reads RSS items', () => {
   const xml = '<rss><channel><item><title>Is a SIP enough?</title><description><![CDATA[<p>Readers ask</p>]]></description></item></channel></rss>'
   assert.match(extractFeedText(xml), /Is a SIP enough\?: Readers ask/)
 })
+
+import { evidence as ev2 } from '../lib/pulse.js'
+test('evidence analyses every metric; goal only picks the first view', () => {
+  const posts = Array.from({ length: 12 }, (_, i) => ({ id: 'p' + i, lever: ['utility', 'narrative', 'vulnerability'][i % 3], metrics: { comments: [0, 0, 0, 0, 2, 0, 0, 1, 0, 3, 0, 0][i], engagementRate: 1 + i / 3, impressions: 100 + i * 20 } }))
+  const e = ev2(posts, 'conversations')
+  assert.equal(e.metricKey, 'comments')
+  assert.equal(e.basis, 'average')
+  assert.deepEqual(Object.keys(e.lenses).sort(), ['comments', 'engagementRate', 'impressions'])
+  const noComments = ev2(posts.map((p) => ({ ...p, metrics: { ...p.metrics, comments: 0 } })), 'conversations')
+  assert.equal(noComments.metricKey, 'engagementRate')
+  assert.equal(noComments.goalFallback, true)
+  assert.equal(ev2(posts.map((p) => ({ ...p, metrics: { comments: 0 } })), 'expert').enough, false)
+  assert.equal(ev2(posts.slice(0, 2), 'expert').enough, false)
+})
