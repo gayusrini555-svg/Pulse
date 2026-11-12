@@ -286,12 +286,12 @@
     const ev = ws.evidence
     if (!ws.mirror?.enough) return `<section class="card soft">${A.pip(64)}<h2>Run Mirror first</h2><p class="muted">Pulse needs your coded posts before it can match results to them.</p><a class="btn" href="#mirror">Go to Mirror</a></section>`
     const unlock = `<section class="row">
-        <article class="card"><span class="tag good" style="align-self:flex-start">Most private</span><h2>Upload your LinkedIn analytics</h2>
+        <article class="card"><span class="tag good" style="align-self:flex-start">Recommended</span><h2>Upload your LinkedIn analytics</h2>
           <ol class="muted" style="margin:0;padding-left:20px"><li>In LinkedIn, open your analytics and export your post data.</li><li>Choose the file here. Pulse reads only that file.</li><li>Repeat whenever you want fresh results.</li></ol>
           <label for="file">Analytics file (.xlsx or .csv)</label><input id="file" type="file" accept=".xlsx,.xls,.csv" style="min-height:auto;padding:12px">
           ${loadingBtn('upload', 'Read my file')}</article>
-        <article class="card"><span class="tag" style="align-self:flex-start">Quickest</span><h2>Use a Buffer personal key</h2>
-          <p class="muted">Create a key in your Buffer settings and paste it here. Pulse uses it once to read your post numbers, then throws it away. It never posts, edits or deletes.</p>
+        <article class="card"><span class="tag" style="align-self:flex-start">Optional shortcut</span><h2>Or paste a Buffer personal key</h2>
+          <p class="muted">Downloading LinkedIn analytics can be slow. If you'd rather skip it, create a personal key in your Buffer settings and paste it here. Pulse uses it once to read your post numbers and never saves it, so paste it again whenever you want fresh results. It never posts, edits or deletes.</p>
           <label for="pkey">Buffer personal key</label><input id="pkey" type="password" autocomplete="off" placeholder="Paste your key">
           ${loadingBtn('key', 'Read my numbers', 'dark')}${ui.keyError ? `<p class="err" role="alert">${esc(ui.keyError)}</p>` : ''}</article></section>`
     if (!ev?.enough) {
