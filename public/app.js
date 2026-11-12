@@ -489,8 +489,13 @@
         ui.chat.push({ who: 'pip', text: a.answer, sources: a.sources })
         return
       }
-      const r = await api('/api/ask', { question: q })
-      ui.chat.push({ who: 'pip', text: r.answer, sources: r.sources })
+      try {
+        const r = await api('/api/ask', { question: q })
+        ui.chat.push({ who: 'pip', text: r.answer, sources: r.sources })
+      } catch (e) {
+        if (e.message === 'signed out') throw e
+        ui.chat.push({ who: 'pip', text: `Sorry, I couldn't answer that just now: ${e.message}` })
+      }
     })
   }
 

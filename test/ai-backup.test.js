@@ -18,3 +18,15 @@ test('when Gemini is busy, the open-source backup answers', async () => {
   assert.ok(hosts.includes('api.groq.com'))
   assert.equal(ai.BACKUP, 'open')
 })
+
+test('if web search fails, Ask still answers without sources', async () => {
+  globalThis.fetch = async (url, init) => {
+    const body = JSON.parse(init.body)
+    if (String(url).includes('googleapis') && body.tools) return new Response(JSON.stringify({ error: { message: 'quota' } }), { status: 429 })
+    if (String(url).includes('googleapis')) return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'plain answer' }] } }] }), { status: 200 })
+    return new Response('{}', { status: 500 })
+  }
+  const out = await ai.search('q')
+  assert.equal(out.text, 'plain answer')
+  assert.deepEqual(out.sources, [])
+})
