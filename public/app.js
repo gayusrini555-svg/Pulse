@@ -296,7 +296,7 @@
           ${loadingBtn('key', 'Read my numbers', 'dark')}${ui.keyError ? `<p class="err" role="alert">${esc(ui.keyError)}</p>` : ''}</article></section>`
     if (!ev?.enough) {
       return `<div class="stack" style="gap:8px;max-width:820px"><span class="eyebrow">Step 4 · Evidence</span><h1>Unlock your results</h1><p class="muted" style="font-size:17px">Performance numbers aren't shared with outside apps by default, so you bring your own. Pick the way that feels right. Everything else in Pulse keeps working either way.</p></div>
-        ${ev && !ev.enough ? `<p class="err">Pulse matched numbers to ${ev.measured} posts. It needs at least 3 to compare against your usual.</p>` : ''}${unlock}${experimentsCard()}`
+        ${ev && !ev.enough ? `<p class="err">${ev.zero ? `Pulse matched numbers to ${ev.measured} posts, but they are all zero for your goal's measure, so there is nothing to compare yet.` : `Pulse matched numbers to ${ev.measured} posts. It needs at least 3 to compare against your usual.`}</p>` : ''}${unlock}${experimentsCard()}`
     }
     const best = ev.levers.find((l) => l.verdict === 'Works for you')
     const worst = [...ev.levers].reverse().find((l) => l.lift < 0)
@@ -309,7 +309,7 @@
         <div class="card tight"><span class="tag warm" style="align-self:flex-start">What drifted</span><div>${worst ? `${esc(worst.name)}: <b>${signed(worst.lift)}</b> versus your usual, across ${worst.n} posts.` : 'Nothing clearly below your usual.'}</div></div>
         <div class="card tight soft"><span class="tag" style="align-self:flex-start;background:#fff">Try next</span><div>${early ? `${esc(early.name)} looks promising (${signed(early.lift)}) but rests on ${early.n} posts. Run 2 more before calling it.` : 'Pick an under-used lever from Ideas and test it.'}</div></div>
       </section>
-      <section class="card" style="gap:4px"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline"><h2>Which levers work for your audience</h2><span class="mono muted" style="font-size:12px">lift vs your median · posts</span></div>
+      <section class="card" style="gap:4px"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline"><h2>Which levers work for your audience</h2><span class="mono muted" style="font-size:12px">lift vs your ${ev.basis === 'average' ? 'average' : 'median'} · posts</span></div>
         ${ev.levers.map((l, i) => {
           const w = (Math.abs(l.lift) / max) * 100
           const col = archOf(l.archetype).color
