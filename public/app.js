@@ -464,19 +464,17 @@
       setWs(r.workspace)
       ui.sent = r.workspace.experiments[0]
     }),
-    upload: () => run('upload', async () => {
+    // Read inputs BEFORE run(): run() re-renders the page, which empties them.
+    upload: () => { const f = document.getElementById('file')?.files?.[0]; return run('upload', async () => {
       if (SAMPLE) return sampleOnly()
-      const f = document.getElementById('file')?.files?.[0]
       if (!f) throw new Error('Choose your analytics file first.')
       if (f.size > 3_000_000) throw new Error('That file is over 3 MB. Export a shorter date range.')
       const data = await new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result).split(',')[1]); r.onerror = reject; r.readAsDataURL(f) })
       setWs((await api('/api/evidence/upload', { data, filename: f.name })).workspace)
-    }),
-    key: () => run('key', async () => {
+    }) },
+    key: () => { const key = (document.getElementById('pkey')?.value || '').trim(); return run('key', async () => {
       if (SAMPLE) return sampleOnly()
-      const el = document.getElementById('pkey')
-      const key = el?.value || ''
-      if (el) el.value = ''
+      if (!key) throw new Error('Paste your Buffer personal key first.')
       ui.keyError = null
       try {
         setWs((await api('/api/evidence/key', { key })).workspace)
@@ -485,7 +483,7 @@
         ui.keyError = e.message
         throw e
       }
-    }),
+    }) },
     'ask-prompt': (i) => {
       const q = { trend: "What's trending in my niche this week?", why: 'Why did my best post do so well?', next: 'What should I test next?', stop: 'Which lever should I stop leaning on?' }[i]
       ask(q, i)
