@@ -35,6 +35,7 @@ globalThis.fetch = async (url, opts = {}) => {
     else if (body.tools) return reply({ candidates: [{ content: { parts: [{ text: 'Answer' }] }, groundingMetadata: { groundingChunks: [{ web: { uri: 'https://s.example', title: 'S' } }] } }] })
     return reply({ candidates: [{ content: { parts: [{ text: JSON.stringify(out) }] } }] })
   }
+  if (u.startsWith('https://feeds.example')) return new Response('<rss><item><title>Why do I sell low?</title><description>help</description></item></rss>', { status: 200 })
   return realFetch(url, opts)
 }
 
@@ -80,4 +81,14 @@ test('signed-in flow from onboarding to evidence', async () => {
   const a = await call('/api/ask', { question: 'What is trending?' })
   assert.equal(a.sources[0].url, 'https://s.example')
   assert.equal((await call('/api/delete', {})).deleted, true)
+})
+
+test('weekly research job refreshes users with sources', async () => {
+  await call('/api/onboarding', { topic: 'Money', audiences: ['A'], goal: 'expert', hunch: 'specificity', organizationId: 'o1', channelId: 'c1', channelName: 'Me' })
+  await call('/api/sources', { sources: ['https://feeds.example/rss'] })
+  const blocked = await realFetch(base + '/api/cron/research')
+  assert.equal(blocked.status, 403)
+  const ok = await realFetch(base + '/api/cron/research', { headers: { 'user-agent': 'vercel-cron/1.0' } })
+  const body = await ok.json()
+  assert.equal(body.refreshed + body.failed, 1)
 })

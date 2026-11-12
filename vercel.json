@@ -2,10 +2,32 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "rewrites": [
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/(.*)", "destination": "/api" }
+    {
+      "source": "/app",
+      "destination": "/app.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
   ],
-  "functions": { "api/index.js": { "maxDuration": 60 } },
-  "crons": [{ "path": "/api/health", "schedule": "0 3 * * *" }]
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/research",
+      "schedule": "30 3 * * 1"
+    }
+  ]
 }
