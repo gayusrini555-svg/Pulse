@@ -293,7 +293,7 @@
         <article class="card"><span class="tag" style="align-self:flex-start">Quickest</span><h2>Use a Buffer personal key</h2>
           <p class="muted">Create a key in your Buffer settings and paste it here. Pulse uses it once to read your post numbers, then throws it away. It never posts, edits or deletes.</p>
           <label for="pkey">Buffer personal key</label><input id="pkey" type="password" autocomplete="off" placeholder="Paste your key">
-          ${loadingBtn('key', 'Read my numbers', 'dark')}</article></section>`
+          ${loadingBtn('key', 'Read my numbers', 'dark')}${ui.keyError ? `<p class="err" role="alert">${esc(ui.keyError)}</p>` : ''}</article></section>`
     if (!ev?.enough) {
       return `<div class="stack" style="gap:8px;max-width:820px"><span class="eyebrow">Step 4 · Evidence</span><h1>Unlock your results</h1><p class="muted" style="font-size:17px">Performance numbers aren't shared with outside apps by default, so you bring your own. Pick the way that feels right. Everything else in Pulse keeps working either way.</p></div>
         ${ev && !ev.enough ? `<p class="err">Pulse matched numbers to ${ev.measured} posts. It needs at least 3 to compare against your usual.</p>` : ''}${unlock}${experimentsCard()}`
@@ -477,7 +477,14 @@
       const el = document.getElementById('pkey')
       const key = el?.value || ''
       if (el) el.value = ''
-      setWs((await api('/api/evidence/key', { key })).workspace)
+      ui.keyError = null
+      try {
+        setWs((await api('/api/evidence/key', { key })).workspace)
+      } catch (e) {
+        if (e.message === 'signed out') throw e
+        ui.keyError = e.message
+        throw e
+      }
     }),
     'ask-prompt': (i) => {
       const q = { trend: "What's trending in my niche this week?", why: 'Why did my best post do so well?', next: 'What should I test next?', stop: 'Which lever should I stop leaning on?' }[i]
