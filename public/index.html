@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse: content research for creators who want to know what works</title>
+<meta name="description" content="Pulse studies your posts like a researcher, listens to what your audience asks, and turns both into small experiments and fresh post ideas.">
+<link rel="icon" href="/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .hero { max-width: 1240px; margin: 0 auto; padding: 40px 28px 72px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; }
+  .hero h1 { font-size: clamp(46px, 7vw, 78px); line-height: .98; letter-spacing: -1px; }
+  .hl { background: var(--bright); padding: 0 12px; border-radius: 18px; display: inline-block; transform: rotate(-2deg); }
+  .reel { flex: 1 1 360px; height: 520px; overflow: hidden; border-radius: 32px; background: var(--subtle); padding: 0 18px; }
+  .reel-card { background: #fff; border-radius: 22px; padding: 14px; display: flex; gap: 14px; align-items: center; margin-top: 14px; }
+  .band { background: var(--subtle); padding: 72px 28px; }
+  .inner { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  .sec-title { font-size: clamp(34px, 4vw, 48px); font-weight: 700; }
+  details { background: #fff; border-radius: 20px; border: 2px solid var(--line); }
+  details[open] { border-color: var(--bright); }
+  summary { cursor: pointer; list-style: none; padding: 18px 22px; font-family: var(--display); font-weight: 600; font-size: 19px; display: flex; justify-content: space-between; gap: 12px; }
+  summary::after { content: '+'; font-family: var(--mono); font-size: 22px; }
+  details[open] summary::after { content: '\2212'; }
+  details p { padding: 0 22px 20px; color: var(--muted); }
+  .lever-pill { padding: 12px 14px; border-radius: 16px; background: #fff; display: flex; flex-direction: column; gap: 2px; }
+  .menu-btn { display: none; }
+  @media (max-width: 860px) { .site-nav a.hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<header class="top" style="position: sticky">
+  <a class="brand" href="/"><span data-pip="40"></span>pulse</a>
+  <nav class="steps site-nav" aria-label="Main">
+    <a class="hide-sm" href="#how">How it works</a>
+    <a class="hide-sm" href="#archetypes">Archetypes</a>
+    <a class="hide-sm" href="#science">The science</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="who">
+    <a class="btn small" href="/app?sample=1" style="border-width: 2px; border-color: var(--ink)">Try a sample</a>
+    <a class="btn dark" href="/auth/login">Connect your Buffer</a>
+  </div>
+</header>
+
+<div id="error" class="wrap" style="padding-bottom: 0" hidden><div class="err" role="alert"></div></div>
+
+<main>
+  <section class="hero">
+    <div style="flex: 1 1 520px; display: flex; flex-direction: column; gap: 24px">
+      <span class="tag rise" style="align-self: flex-start; padding: 8px 14px; font-size: 13px">Content research for LinkedIn creators</span>
+      <h1 class="rise d1">Stop guessing what <span class="hl">works.</span></h1>
+      <p class="rise d2" style="font-size: 20px; color: var(--muted); max-width: 580px">Pulse studies your posts like a researcher, reveals your creator personality, and listens to what your audience is really asking. Then it turns all of it into small experiments and fresh ideas, and tells you honestly what to keep.</p>
+      <div class="rise d3" style="display: flex; flex-wrap: wrap; gap: 12px">
+        <a class="btn primary wiggle" href="/auth/login">Connect your Buffer</a>
+        <a class="btn" href="/app?sample=1" style="min-height: 54px; font-family: var(--display); font-weight: 600; font-size: 19px; border-radius: 18px">Try a sample account</a>
+      </div>
+      <p class="rise d4 muted" style="font-size: 13px">Free while in beta. Pulse never posts on its own: you decide what goes out.</p>
+    </div>
+    <div class="reel" aria-hidden="true"><div class="marquee" id="reel"></div></div>
+  </section>
+
+  <section id="how" class="band">
+    <div class="inner">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-end">
+        <h2 class="sec-title">One loop. Four steps.</h2>
+        <p class="muted" style="max-width: 440px">Think before you post, learn after. Pulse is your research desk; your posts still go out the way they always do.</p>
+      </div>
+      <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr))">
+        <article class="card cut rise"><span class="tag mono" style="align-self: flex-start; background: #C9D5FF">01</span><h3>Mirror</h3><p class="muted">Every past post coded for its hook, emotion and persuasion lever. Meet your creator archetype.</p></article>
+        <article class="card cut rise d1"><span class="tag mono" style="align-self: flex-start; background: #FBD1E6">02</span><h3>Listen</h3><p class="muted">Paste comments or add newsletters and blogs your audience reads. Get their real questions, in their words.</p></article>
+        <article class="card cut rise d2"><span class="tag mono" style="align-self: flex-start; background: #FFE9A8">03</span><h3>Ideas &amp; drafts</h3><p class="muted">A real pain point plus a lever that works for you becomes ideas, a research brief and three drafts.</p></article>
+        <article class="card cut rise d3"><span class="tag mono" style="align-self: flex-start; background: #C4F0DA">04</span><h3>Evidence</h3><p class="muted">Predict, post, then compare with your own usual. Keep what works, drop what doesn't.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="archetypes" style="padding: 72px 28px">
+    <div class="inner">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-end">
+        <h2 class="sec-title">Which creator are you?</h2>
+        <p class="muted" style="max-width: 440px">Six archetypes, built from the levers you lean on. Your badges fill in as experiments prove what works for your audience.</p>
+      </div>
+      <div class="grid" id="arch-grid" style="grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr))"></div>
+    </div>
+  </section>
+
+  <section id="science" class="band">
+    <div class="inner">
+      <div class="row" style="align-items: center">
+        <div class="stack" style="flex: 1 1 380px">
+          <span data-pip="110" data-label="Pip, the Pulse mascot"></span>
+          <h2 class="sec-title">Built on behavioural science, not vibes.</h2>
+          <p class="muted">Every label Pulse gives a post comes from a codebook grounded in published research: Cialdini on influence, Berger and Milkman on what makes content spread, Loewenstein on curiosity and Kahneman and Tversky on loss framing. Click any label in the app to see where it comes from.</p>
+        </div>
+        <div class="grid" id="lever-grid" style="flex: 2 1 520px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr))"></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 72px 28px">
+    <div class="inner">
+      <div class="row">
+        <div class="card warm"><h3>Your data stays yours</h3><p class="muted">Pulse reads only what it needs, never sells or shares it, and deletes everything in one click. Results come from a file you upload or a key used once and thrown away.</p><a href="/privacy">Read the privacy notes</a></div>
+        <div class="card"><h3>Your choice of AI</h3><p class="muted">Pulse's research runs on a leading AI model (Gemini, Claude or GPT), and every brief opens in Claude or ChatGPT if you want to keep brainstorming there.</p></div>
+        <div class="card soft"><h3>Honest about small numbers</h3><p class="muted">One viral post is not a pattern. Pulse labels anything under five posts as an early signal and says so plainly.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding: 0 28px 80px">
+    <div class="inner" style="max-width: 880px">
+      <h2 class="sec-title">Questions, answered</h2>
+      <div class="stack">
+        <details open><summary>What does Pulse actually do?</summary><p>It studies the posts you have already published, finds the persuasion levers you lean on and the creator you are becoming, listens to what your audience is asking, and helps you run small experiments with fresh ideas. Over time it tells you which levers really work for your audience, based on your own results.</p></details>
+        <details><summary>Why do I connect Buffer?</summary><p>Pulse reads the posts you have sent through your Buffer account, and can save ideas and drafts back to it. You sign in with Buffer and approve what Pulse can see. A free Buffer account works.</p></details>
+        <details><summary>Which platforms does it support?</summary><p>LinkedIn for now, where thoughtful posts matter most. More platforms will follow.</p></details>
+        <details><summary>Will Pulse post for me?</summary><p>Never on its own. You choose whether an idea or draft is saved, and you edit and schedule it yourself.</p></details>
+        <details><summary>Why do I bring my own results?</summary><p>Performance numbers are not shared with outside apps by default. So you choose: upload your LinkedIn analytics file, or paste a Buffer key that Pulse uses once to read your numbers and then throws away.</p></details>
+        <details><summary>Is my data safe?</summary><p>Pulse reads only what it needs, never sells or shares your data, and lets you delete everything in one click. Keys are never stored.</p></details>
+        <details><summary>Which AI does Pulse use?</summary><p>A leading AI model (Google Gemini, Anthropic Claude or OpenAI GPT) codes your posts, groups audience questions and drafts text. Your text is sent to it only for that, and every label links back to the post it came from.</p></details>
+        <details><summary>Where do the archetypes come from?</summary><p>From a codebook built on published research on persuasion and sharing. The archetype is a friendly summary of your lever mix, not a personality test.</p></details>
+        <details><summary>Is this an official Buffer product?</summary><p>No. Pulse is an independent app built on the Buffer API for the Buffer Commit 2026 contest.</p></details>
+        <details><summary>How much does it cost?</summary><p>Free while in beta.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer style="background: var(--ink); color: #FBFAF7; padding: 40px 28px">
+  <div class="inner" style="flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center">
+    <div class="brand" style="color: #FBFAF7"><span data-pip="40"></span>pulse</div>
+    <p style="font-size: 13px; color: #D9D6E4; max-width: 560px">Built on the Buffer API for Buffer Commit 2026. Pulse is an independent project and not an official Buffer product. <a href="/privacy" style="color: #FBFAF7">Privacy</a></p>
+  </div>
+</footer>
+
+<script src="/art.js"></script>
+<script src="/landing.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "pulse",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pulse: a behavioural research coach for Buffer users. Built on the Buffer API for Buffer Commit 2026.",
+  "scripts": {
+    "start": "node server.js",
+    "certs": "node scripts/generate-cert.js",
+    "test": "node --test",
+    "lint": "node --check server.js && node --check api/index.js && for f in lib/*.js public/*.js; do node --check $f || exit 1; done"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "iron-session": "^9.0.1",
+    "xlsx": "^0.18.5"
+  }
+}
