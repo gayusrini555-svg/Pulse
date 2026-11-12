@@ -183,7 +183,7 @@
     const m = ws.mirror
     if (!m) {
       return `<section class="card soft" style="align-items:flex-start;gap:14px">${A.pip(90, 'Pip')}<span class="eyebrow">Step 1 · Mirror</span><h1>Ready when you are.</h1>
-        <p class="muted" style="max-width:640px">Pulse will read up to 60 posts you've sent on ${esc(ws.onboarding.channelName || 'your LinkedIn')}, code each one like a researcher and work out your creator archetype. It takes about a minute.</p>
+        <p class="muted" style="max-width:640px">Pulse will read up to 45 posts you've sent on ${esc(ws.onboarding.channelName || 'your LinkedIn')}, code each one like a researcher and work out your creator archetype. It takes about a minute.</p>
         ${loadingBtn('mirror', 'Read my posts')}</section>`
     }
     if (!m.enough) return `<section class="card soft">${A.pip(70)}<h2>Not enough posts yet</h2><p class="muted">Pulse found ${m.count} posts. It needs at least 5 to see a pattern.</p>${loadingBtn('mirror', 'Try again', 'dark')}</section>`
@@ -404,8 +404,7 @@
       const r = await api('/api/onboarding', { topic: ob.topic, audiences: [...ob.audiences], goal: ob.goal, frequency: ob.frequency, hunch: ob.hunch, organizationId: ob.orgId, channelId: ob.channelId, channelName: `${ch.displayName || ch.name} · LinkedIn` })
       setWs(r.workspace)
       location.hash = '#mirror'
-      ui.busy = null
-      actions.mirror()
+      setTimeout(() => actions.mirror(), 50)
     }),
     mirror: () => run('mirror', async () => { if (SAMPLE) return; setWs((await api('/api/mirror', {})).workspace) }),
     topic: (i) => run('topic', async () => { if (SAMPLE) return sampleOnly(); setWs((await api('/api/topic-check', { choice: i })).workspace) }),
