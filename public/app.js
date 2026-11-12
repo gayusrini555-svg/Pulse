@@ -35,7 +35,36 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
   const lv = (k) => LEVERS[k] || ['Unknown', 'librarian', '', '']
   const archOf = (k) => A.FACES[k] || A.FACES.librarian
-  const leverTag = (k) => `<span class="tag lever" style="background:${archOf(lv(k)[1]).color}" title="${esc(lv(k)[3])}">${esc(lv(k)[0])}</span>`
+  // Plain-language guide to the levers: what it is, why it works, an example first line.
+  const PLAIN = {
+    specificity: ['Exact details: numbers, names, dates, real examples.', 'Specific claims feel true and are easier to remember than vague ones.', 'We asked 42 founders one question. 31 gave the same answer.'],
+    authority: ['Borrowing credibility from expertise, research or a respected name.', 'People trust someone who clearly knows the field.', 'After 8 years in market research, this is the mistake I see most.'],
+    contrarian: ['Disagreeing with common advice or the usual way of doing things.', 'Surprise makes people stop scrolling and react.', 'Stop asking customers what they want. Here is why.'],
+    curiosity_gap: ['Opening a question the reader wants answered.', 'An open loop makes people keep reading to close it.', 'One question predicted which users would leave. It was not about price.'],
+    narrative: ['Telling a small story: a moment, a person, a turn.', 'Stories pull readers in, so the point lands without a lecture.', 'Last Tuesday a client called me, upset about a "yes" that meant nothing.'],
+    vulnerability: ['Sharing a mistake, a doubt or an honest feeling.', 'Openness builds trust and makes people want to reply.', 'I launched something nobody used. Here is what I missed.'],
+    utility: ['Giving something useful: steps, a framework, a checklist.', 'People save and share what helps them do their job.', '3 questions to ask before you build anything new:'],
+    loss_framing: ['Showing what the reader could lose, or a mistake to avoid.', 'Losing something feels bigger than gaining the same amount.', 'Every vague survey question costs you a real customer insight.'],
+    reciprocity: ['Giving first, or inviting the audience to take part.', 'When you give or ask, people feel like answering back.', 'I made a checklist for this. Comment "list" and I will send it.'],
+    belonging: ['Speaking to a shared identity: "people like us".', 'Feeling part of a group makes people join in.', 'To everyone who has been told "just ask users what they want":'],
+    social_proof: ['Pointing to what many others do, say or recommend.', 'People follow what others like them are doing.', 'Most product managers I spoke to this month have dropped this metric.'],
+    novelty: ['Sharing something new: a trend, a tool, a discovery.', 'New information is interesting, and interesting things get shared.', 'A new study just changed how I think about this.'],
+  }
+  // A collapsible guide. keys: which levers to list first (the rest follow).
+  function leverGuide(keys = [], open = false) {
+    const order = [...new Set([...keys, ...Object.keys(LEVERS)])].filter((k) => LEVERS[k])
+    return `<details class="card tight" ${open ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">What do these levers mean?</summary>
+      <p class="muted" style="font-size:14px;margin-top:8px">A lever is the main thing in a post that makes people stop, read and react. Pulse labels each post by its main lever. Each lever belongs to one of six creator archetypes.</p>
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:10px;margin-top:6px">${order.map((k) => {
+        const [name, arch, , source] = lv(k)
+        const [what, why, ex] = PLAIN[k] || [lv(k)[2], '', '']
+        return `<div class="card tight" style="gap:6px;border-left:6px solid ${archOf(arch).color}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b style="font-family:var(--display);font-size:18px">${esc(name)}</b><span class="mono muted" style="font-size:11px">${esc(archOf(arch).name || arch)}</span></div>
+          <div style="font-size:14px">${esc(what)}</div><div class="muted" style="font-size:13px"><b>Why it works:</b> ${esc(why)}</div>
+          ${ex ? `<div style="font-size:13px;background:var(--soft);border-radius:10px;padding:8px 10px"><span class="mono muted" style="font-size:11px">Example first line</span><br>"${esc(ex)}"</div>` : ''}
+          <div class="muted" style="font-size:11px">Research: ${esc(source)}</div></div>`
+      }).join('')}</div></details>`
+  }
+  const leverTag = (k) => `<span class="tag lever" style="background:${archOf(lv(k)[1]).color}" title="${esc((PLAIN[k] || [lv(k)[2]])[0])}">${esc(lv(k)[0])}</span>`
   const pct = (x) => Math.round((x || 0) * 100) + '%'
   const signed = (n) => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + '%'
   const route = () => (location.hash || '#mirror').slice(1)
@@ -204,9 +233,10 @@
           <div class="stack" style="flex:1 1 260px;gap:10px"><span class="eyebrow">Step 1 · Mirror · last ${m.analysed} posts</span><h1>You post like ${esc(p.name)}.</h1><p style="font-size:17px">${esc(p.line)}</p>
           ${m.streak ? `<div style="display:flex;align-items:center;gap:10px">${A.face(m.streak, 44, 'bob2')}<b>with a streak of ${esc(archOf(m.streak).name)}</b></div>` : ''}
           ${ws.onboarding.hunch ? `<p class="muted" style="font-size:13px">Your hunch was "${esc(lv(ws.onboarding.hunch)[0])}". ${m.levers[0]?.key === ws.onboarding.hunch ? 'Your posts agree.' : `Your posts lean most on ${esc(m.levers[0]?.name)}.`}</p>` : ''}</div></div>
-        <div class="card rise d2" style="flex:1 1 340px"><h2>Levers you lean on</h2>${m.levers.slice(0, 6).map((l, i) => `<div class="stack" style="gap:6px"><div style="display:flex;justify-content:space-between;font-weight:500"><span title="${esc(lv(l.key)[3])}">${esc(l.name)}</span><span class="mono" style="font-weight:700">${pct(l.share)}</span></div><div class="bar"><i class="grow" style="width:${Math.min(100, l.share * 200)}%;background:${archOf(l.archetype).color};animation-delay:${0.2 + i * 0.1}s"></i></div></div>`).join('')}
+        <div class="card rise d2" style="flex:1 1 340px"><h2>Levers you lean on</h2>${m.levers.slice(0, 6).map((l, i) => `<div class="stack" style="gap:6px"><div style="display:flex;justify-content:space-between;font-weight:500"><span title="${esc((PLAIN[l.key] || [lv(l.key)[2]])[0])}">${esc(l.name)}</span><span class="mono" style="font-weight:700">${pct(l.share)}</span></div><div class="bar"><i class="grow" style="width:${Math.min(100, l.share * 200)}%;background:${archOf(l.archetype).color};animation-delay:${0.2 + i * 0.1}s"></i></div></div>`).join('')}
           <p class="muted" style="font-size:13px">Share of your last ${m.analysed} posts. No performance numbers needed.</p></div>
       </section>
+      ${leverGuide(m.levers.map((l) => l.key))}
       ${shift}
       ${collection()}
       <section class="card"><h2>Recent posts, coded</h2><p class="muted" style="font-size:13px">Disagree with a label? Change it. Pulse learns from your corrections.</p>
@@ -255,6 +285,7 @@
     return `<section class="stack" id="brief"><span class="eyebrow">Research brief</span><h1 class="rise" style="font-size:clamp(32px,4vw,46px)">${esc(b.title)}</h1>
       <div class="grid rise d1">${[['Why this topic', b.why], ['Why this lever', b.leverWhy], ['Hypothesis', b.hypothesis], ["How we'll know", `${b.metric} after 7 days, against your usual post.`]].map(([h, t]) => `<div class="card tight cut"><span class="eyebrow">${h}</span><div>${esc(t)}</div></div>`).join('')}</div>
       <h2 style="font-size:28px">Pick a draft</h2>
+      ${leverGuide((b.drafts || []).map((x) => x.lever))}
       <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))">${b.drafts.map((x, i) => `<button class="card tight" data-act="pick-draft" data-i="${i}" aria-pressed="${i === ui.draft}" style="text-align:left;border:3px solid ${i === ui.draft ? 'var(--bright)' : 'var(--line)'};transform:${i === ui.draft ? 'translateY(-4px)' : 'none'};transition:transform .25s;color:var(--ink)">${leverTag(x.lever)}<span style="white-space:pre-line">${esc(x.text)}</span></button>`).join('')}</div>
       <section class="card"><label for="draftText"><h3>Edit before it goes to your Buffer</h3></label><textarea id="draftText" data-model="draftText" style="font-family:var(--body);font-size:15px;min-height:180px">${esc(text)}</textarea>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span class="mono muted" style="font-size:12px">${text.length} / 3000 characters</span><span style="flex:1"></span>${aiLinks(`Improve this LinkedIn draft without changing its meaning. Keep it under 1,300 characters and do not invent statistics.\n\n${text}`)}</div></section>
@@ -326,11 +357,12 @@
           const w = (Math.abs(l.lift) / max) * 100
           const col = archOf(l.archetype).color
           const tg = { 'Works for you': 'good', 'Early signal': 'warm', 'No clear effect': 'grey', 'Works against you': 'bad' }[l.verdict]
-          return `<div class="lift"><b title="${esc(lv(l.key)[3])}">${esc(l.name)}</b><div class="axis"><div>${l.lift < 0 ? `<i class="grow left" style="display:block;height:16px;width:${w}%;border-radius:999px 0 0 999px;background:${col};opacity:.55;animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div><span class="zero"></span><div>${l.lift >= 0 ? `<i class="grow" style="display:block;height:16px;width:${w}%;border-radius:0 999px 999px 0;background:${col};opacity:${l.verdict === 'Works for you' ? 1 : 0.55};animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div></div><span class="mono" style="font-weight:700">${signed(l.lift)} <span class="muted" style="font-weight:400">· ${l.n}</span></span><span class="tag ${tg}" style="justify-self:start">${esc(l.verdict)}</span></div>`
+          return `<div class="lift"><b title="${esc((PLAIN[l.key] || [lv(l.key)[2]])[0])}">${esc(l.name)}</b><div class="axis"><div>${l.lift < 0 ? `<i class="grow left" style="display:block;height:16px;width:${w}%;border-radius:999px 0 0 999px;background:${col};opacity:.55;animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div><span class="zero"></span><div>${l.lift >= 0 ? `<i class="grow" style="display:block;height:16px;width:${w}%;border-radius:0 999px 999px 0;background:${col};opacity:${l.verdict === 'Works for you' ? 1 : 0.55};animation-delay:${0.2 + i * 0.1}s"></i>` : ''}</div></div><span class="mono" style="font-weight:700">${signed(l.lift)} <span class="muted" style="font-weight:400">· ${l.n}</span></span><span class="tag ${tg}" style="justify-self:start">${esc(l.verdict)}</span></div>`
         }).join('')}
         <p class="muted" style="font-size:13px;margin-top:6px">Fewer than 5 posts is only an early signal. Results from ${ws.evidenceSource?.kind === 'key' ? 'a one-time Buffer key read' : 'your uploaded file'}, ${ws.evidenceSource?.matched || ev.measured} posts matched.</p>
         <div class="card tight soft" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;margin-top:8px"><span style="flex:1 1 300px;font-size:14px">${ws.evidenceSource?.kind === 'key' ? 'These numbers are for this session only. Your key was never saved, and Pulse deletes these numbers when you log out, sign in again, or after 6 hours. Paste your key again next time.' : 'These numbers come from the file you uploaded. You can clear them any time.'}</span>${loadingBtn('clear-numbers', 'Clear my numbers', '')}</div></section>
       ${allTable}
+      ${leverGuide(L.levers.map((l) => l.key))}
       <section class="row">${experimentsCard()}${ws.calibration ? `<div class="card soft" style="align-items:center;text-align:center;flex:1 1 260px"><span class="eyebrow">Calibration</span>
         <svg width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Calibration: ${ws.calibration.right} of ${ws.calibration.of} calls right"><circle cx="60" cy="60" r="48" fill="none" stroke="#fff" stroke-width="14"></circle><circle cx="60" cy="60" r="48" fill="none" stroke="#FF6B3D" stroke-width="14" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="${(ws.calibration.right / ws.calibration.of) * 301.6} 302"></circle><text x="60" y="67" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="24" fill="#262335">${ws.calibration.right} / ${ws.calibration.of}</text></svg>
         <div>of your calls were right.</div></div>` : ''}</section>
