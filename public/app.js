@@ -78,9 +78,11 @@
     setTimeout(() => t.remove(), 4200)
   }
 
-  async function api(path, body) {
+  async function api(path, body, retried = false) {
     const res = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     const json = await res.json().catch(() => ({}))
+    // Another request may have just refreshed the Buffer token; try once more with the new cookie.
+    if (res.status === 401 && json.code === 'refresh_failed' && !retried) { await new Promise((r) => setTimeout(r, 900)); return api(path, body, true) }
     if (res.status === 401 && !SAMPLE) { location.href = '/?error=' + encodeURIComponent(json.error || 'Please connect your Buffer account again.'); throw new Error('signed out') }
     if (!res.ok) { const e = new Error(json.error || 'Something went wrong. Please try again.'); e.code = json.code; throw e }
     return json
